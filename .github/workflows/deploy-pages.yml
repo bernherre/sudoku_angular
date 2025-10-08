@@ -2,7 +2,9 @@ name: Build Angular to /docs (GitHub Pages)
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - dev
   workflow_dispatch:
 
 permissions:
@@ -27,31 +29,9 @@ jobs:
       - name: Install deps
         run: npm ci
 
-      - name: Compute base href
-        run: |
-          REPO="${GITHUB_REPOSITORY#*/}"
-          if [[ "$REPO" == *.github.io ]]; then
-            echo "BASE_HREF=/" >> $GITHUB_ENV
-          else
-            echo "BASE_HREF=/$REPO/" >> $GITHUB_ENV
-          fi
-
       - name: Build Angular into /docs
         run: |
           rm -rf docs
-          npm run build -- --configuration production --base-href "$BASE_HREF" --output-path docs
-          # SPA fallback + evitar Jekyll
-          cp docs/index.html docs/404.html
-          touch docs/.nojekyll
+          npm run build
 
-      - name: Commit & push /docs to main
-        run: |
-          git config --global user.name  "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A docs
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-          else
-            git commit -m "chore: update docs for GitHub Pages"
-            git push
-          fi
+

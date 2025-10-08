@@ -1,11 +1,10 @@
-# Sample workflow for building and deploying a Jekyll site to GitHub Pages
-name: Deploy Jekyll with GitHub Pages dependencies preinstalled
+# Build & deploy Angular to GitHub Pages (uses Pages artifact)
+name: Deploy Angular with GitHub Pages
 
 on:
   # Runs on pushes targeting the default branch
   push:
     branches: ["main"]
-
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -15,8 +14,7 @@ permissions:
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+# Allow only one concurrent deployment; don't cancel in-progress runs
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -28,15 +26,46 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      # Configure Pages (required by deploy-pages later)
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      - name: Build with Jekyll
-        uses: actions/jekyll-build-pages@v1
+
+      # Setup Node for Angular build
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          source: ./
-          destination: ./_site
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Compute correct base-href ("/" for *.github.io, "/<repo>/" otherwise)
+      - name: Compute base href
+        run: |
+          REPO="${GITHUB_REPOSITORY#*/}"
+          if [[ "$REPO" == *.github.io ]]; then
+            echo "BASE_HREF=/" >> $GITHUB_ENV
+          else
+            echo "BASE_HREF=/$REPO/" >> $GITHUB_ENV
+          fi
+
+      # Build Angular (ajusta el path si tu outputPath es distinto)
+      - name: Build Angular
+        run: |
+          npm run build -- --configuration production --base-href "$BASE_HREF"
+          # SPA fallback + evitar Jekyll en Pages
+          BUILD_DIR="dist/ng-sudoku/browser"
+          cp "$BUILD_DIR/index.html" "$BUILD_DIR/404.html"
+          touch "$BUILD_DIR/.nojekyll"
+
+      # Upload artifact to Pages
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
+        with:
+          # Debe coincidir con tu angular.json -> options.outputPath
+          path: dist/ng-sudoku/browser
 
   # Deployment job
   deploy:
