@@ -53,13 +53,33 @@ jobs:
         run: |
           npm run build -- --configuration production --base-href "$BASE_HREF"
 
-      - name: Resolve build dir from angular.json
-        id: paths
+      - name: Detect build dir from angular.json
+        id: detect
         run: |
-          BUILD_DIR=$(node -e "const fs=require('fs');const a=JSON.parse(fs.readFileSync('angular.json','utf8'));const proj=Object.keys(a.projects)[0];const p=(a.projects[proj].architect?.build?.options?.outputPath)||(a.projects[proj].targets?.build?.options?.outputPath);process.stdout.write(p)")
-          echo "BUILD_DIR=$BUILD_DIR" >> $GITHUB_ENV
-          echo "Using BUILD_DIR=$BUILD_DIR"
-          test -d "$BUILD_DIR" || (echo 'Build dir not found';_
+          node <<'NODE'
+          const fs = require('fs');
+          const a = JSON.parse(fs.readFileSync('angular.json','utf8'));
+          const proj = Object.keys(a.projects)[0];
+          const get = (o,p)=>p.split('.').reduce((x,k)=>x&&x[k],o);
+          const p =
+            get(a, `projects.${proj}.architect.build.options.outputPath`) ||
+            get(a, `projects.${proj}.targets.build.options.outputPath`) ||
+            'dist';
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `dir=${p}\n`);
+          NODE
+          echo "BUILD_DIR=${{ steps.detect.outputs.dir }}"
+
+      - name: SPA fallback & .nojekyll
+        run: |
+          ls -la "${{ steps.detect.outputs.dir }}" || true
+          cp "${{ steps.detect.outputs.dir }}/index.html" "${{ steps.detect.outputs.dir }}/404.html"
+          touch "${{ steps.detect.outputs.dir }}/.nojekyll"
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ steps.detect.outputs.dir }}
+
 
 
   # Deployment job
