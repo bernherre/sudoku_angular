@@ -1,0 +1,37 @@
+<div class="panel controls">
+  <div class="brand">
+    <div class="dot"></div>
+    <h1>Sudoku Angular</h1>
+  </div>
+
+
+  <label>
+    Tamaño
+    <select class="select" [value]="sizeKey" (change)="sizeKeyChange.emit(($event.target as HTMLSelectElement).value as any)">
+      <option value="4x4">4x4</option>
+      <option value="6x6">6x6</option>
+      <option value="9x9">9x9</option>
+    </select>
+  </label>
+
+
+  <label>
+    Dificultad
+    <select class="select" [value]="difficulty" (change)="difficultyChange.emit(($event.target as HTMLSelectElement).value as any)">
+      <option>Fácil</option>
+      <option>Media</option>
+      <option>Difícil</option>
+      <option>Experto</option>
+    </select>
+  </label>
+
+
+  <button class="btn primary" (click)="action.emit('nuevo')">Nuevo</button>
+  <button class="btn" (click)="action.emit('revisar')">Revisar</button>
+  <button class="btn" (click)="action.emit('pista')">Pista</button>
+  <button class="btn ok" (click)="action.emit('solucion')">Solución</button>
+  <button class="btn danger" (click)="action.emit('limpiar')">Limpiar</button>
+
+
+  <span class="legend" *ngIf="solved">✔ Resuelto</span>
+</div>

@@ -1,0 +1,15 @@
+.controls h1 {
+  margin: 0;
+}
+
+.controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.controls .select {
+  min-width: 100px;
+}

@@ -1,0 +1,17 @@
+.side-info {
+  min-width: 240px;
+}
+
+  .side-info h3 {
+    margin-top: 4px;
+  }
+
+  .side-info ul {
+    margin: 0;
+    padding-left: 18px;
+  }
+
+  .side-info li {
+    margin: 6px 0;
+    color: var(--muted);
+  }

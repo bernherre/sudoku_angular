@@ -1,0 +1,32 @@
+<div class="container">
+  <div class="header">
+    <sudoku-controls [sizeKey]="sizeKey()"
+                     [difficulty]="difficulty()"
+                     [solved]="solved()"
+                     (sizeKeyChange)="onSizeKeyChange($event)"
+                     (difficultyChange)="onDifficultyChange($event)"
+                     (action)="onAction($event)"></sudoku-controls>
+  </div>
+
+
+  <div class="panel grid-wrap">
+    <sudoku-board [cfg]="sdk.getConfig(sizeKey())"
+                  [grid]="grid()"
+                  [givenMask]="givenMask()"
+                  [invalidMask]="invalidMask()"
+                  (changeCell)="onChangeCell($event)"></sudoku-board>
+
+
+    <div class="side-info">
+      <h3>Atajos</h3>
+      <ul>
+        <li><strong>Nuevo</strong>: genera un tablero con unicidad garantizada.</li>
+        <li><strong>Revisar</strong>: marca en rojo las celdas con conflicto.</li>
+        <li><strong>Pista</strong>: revela una celda correcta al azar.</li>
+        <li><strong>Solución</strong>: rellena el tablero con la solución.</li>
+        <li><strong>Limpiar</strong>: borra entradas del usuario.</li>
+      </ul>
+      <p class="legend">Dificultad ajusta la cantidad de pistas iniciales.</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,11 @@
+.board-wrap {
+  display: inline-block;
+}
+
+.sudoku {
+  gap: 0;
+}
+
+  .sudoku > div {
+    display: contents;
+  }

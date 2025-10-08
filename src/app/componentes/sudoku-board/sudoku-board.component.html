@@ -1,0 +1,20 @@
+<div class="board-wrap" [ngClass]="{
+'block-border-9x9': cfg.size===9,
+'block-border-6x6': cfg.size===6,
+'block-border-4x4': cfg.size===4
+}">
+  <div class="sudoku" [class.small]="cfg.size===4" [class.medium]="cfg.size===6" [class.large]="cfg.size===9">
+    <div *ngFor="let row of grid; let r = index">
+      <div *ngFor="let cell of row; let c = index"
+           class="cell"
+           [class.given]="givenMask[r][c]"
+           [class.invalid]="invalidMask[r][c]">
+        <input [readOnly]="givenMask[r][c]"
+               [value]="cell ?? ''"
+               (input)="onInput(r,c,$event)"
+               inputmode="numeric" pattern="[0-9]*" maxlength="1" />
+      </div>
+    </div>
+  </div>
+  <div class="legend">Consejo: usa 1-9 (o 1-6 / 1-4). Las celdas en rojo tienen conflicto.</div>
+</div>
