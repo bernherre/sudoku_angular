@@ -53,33 +53,32 @@ jobs:
         run: |
           npm run build -- --configuration production --base-href "$BASE_HREF"
 
-      - name: Detect build dir from angular.json
-        id: detect
+      # Localiza automáticamente el index.html producido por Angular
+      - name: Locate build output (index.html)
+        id: locate
         run: |
-          node <<'NODE'
-          const fs = require('fs');
-          const a = JSON.parse(fs.readFileSync('angular.json','utf8'));
-          const proj = Object.keys(a.projects)[0];
-          const get = (o,p)=>p.split('.').reduce((x,k)=>x&&x[k],o);
-          const p =
-            get(a, `projects.${proj}.architect.build.options.outputPath`) ||
-            get(a, `projects.${proj}.targets.build.options.outputPath`) ||
-            'dist';
-          fs.appendFileSync(process.env.GITHUB_OUTPUT, `dir=${p}\n`);
-          NODE
-          echo "BUILD_DIR=${{ steps.detect.outputs.dir }}"
+          set -e
+          echo "Searching for index.html under dist/..."
+          INDEX=$(find dist -type f -name index.html | head -n1)
+          if [ -z "$INDEX" ]; then
+            echo "ERROR: No index.html found under dist/"
+            echo "Dist tree:"
+            find dist -maxdepth 4 -print
+            exit 1
+          fi
+          DIR=$(dirname "$INDEX")
+          echo "Found: $INDEX"
+          echo "dir=$DIR" >> "$GITHUB_OUTPUT"
 
       - name: SPA fallback & .nojekyll
         run: |
-          ls -la "${{ steps.detect.outputs.dir }}" || true
-          cp "${{ steps.detect.outputs.dir }}/index.html" "${{ steps.detect.outputs.dir }}/404.html"
-          touch "${{ steps.detect.outputs.dir }}/.nojekyll"
+          cp "${{ steps.locate.outputs.dir }}/index.html" "${{ steps.locate.outputs.dir }}/404.html"
+          touch "${{ steps.locate.outputs.dir }}/.nojekyll"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ${{ steps.detect.outputs.dir }}
-
+          path: ${{ steps.locate.outputs.dir }}
 
 
   # Deployment job
